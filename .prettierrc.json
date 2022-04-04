@@ -1,0 +1,11 @@
+{
+  "@see": "https://github.com/obartra/prettierrc",
+  "tabWidth": 2,
+  "useTabs": false,
+  "noSemi": true,
+  "singleQuote": true,
+  "trailingComma": "none",
+  "printWidth": 100,
+  "bracketSpacing": true,
+  "arrowParens": "always"
+}
