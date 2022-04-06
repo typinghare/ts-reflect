@@ -127,6 +127,10 @@ export class Class<Context extends object = object> extends AbstractReflector<Co
     return this._constructor;
   }
 
+  public getDecoratedMethodSet<MethodContext extends object>(): Set<Method<MethodContext>> {
+    return <Set<Method<MethodContext>>>this.decoratedMethodSet;
+  }
+
   public getMethod<MethodContext extends object = object>(name: string): Method<MethodContext> | null {
     if (this.decoratedMethodSet === undefined) return null;
     return findOne<Method<MethodContext>>(this.decoratedMethodSet, (method) => method.getName() === name);
@@ -161,7 +165,7 @@ export class Class<Context extends object = object> extends AbstractReflector<Co
 export class Method<Context extends object = object> extends AbstractReflector<Context> {
   private readonly _value: Function;
 
-  public decoratedParameterArray: Array<Parameter<any>> = [];
+  public _parameterArray: Array<Parameter<any>> = [];
 
   public constructor(name: string, value: Function) {
     super(name);
@@ -172,15 +176,19 @@ export class Method<Context extends object = object> extends AbstractReflector<C
     return this._value;
   }
 
-  public getParameterByName<ParameterContext extends object = object>(name: string): Parameter<ParameterContext> | undefined {
-    for (const _parameter of this.decoratedParameterArray) {
+  public getParameterArray<ParameterContext extends object>(): Array<Parameter<ParameterContext>> {
+    return this._parameterArray;
+  }
+
+  public getParameterByName<ParameterContext extends object>(name: string): Parameter<ParameterContext> | undefined {
+    for (const _parameter of this._parameterArray) {
       if (_parameter.getName() === name) return _parameter;
     }
     return undefined;
   }
 
-  public getParameterByIndex<ParameterContext extends object = object>(index: number): Parameter<ParameterContext> | undefined {
-    return this.decoratedParameterArray[index];
+  public getParameterByIndex<ParameterContext extends object>(index: number): Parameter<ParameterContext> | undefined {
+    return this._parameterArray[index];
   }
 }
 

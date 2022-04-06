@@ -57,12 +57,19 @@ export class DecoratorGenerator {
       if (_class.decoratedMethodSet === undefined) {
         _class.decoratedMethodSet = Reflect.getMetadata(METADATA_KEY_METHOD_SET, constructor) || new Set<Method>();
         _class.decoratedMethodSet && _class.decoratedMethodSet.forEach(decoratedMethod => {
-          decoratedMethod.decoratedParameterArray =
-            Reflect.getOwnMetadata(METADATA_KEY_PARAMETER_ARRAY, constructor, decoratedMethod.getName()) || [];
+          const parameterArray = decoratedMethod.getParameterArray();
+          const decoratedParameterArray: Array<Parameter | null>
+            = Reflect.getOwnMetadata(METADATA_KEY_PARAMETER_ARRAY, constructor, decoratedMethod.getName());
+
           const parameterNames = getParameterNames(decoratedMethod.getValue());
-          for (const decoratedParameter of decoratedMethod.decoratedParameterArray) {
-            const name = parameterNames.shift();
-            name && decoratedParameter.setName(name);
+          if (decoratedParameterArray) {
+            for (const decoratedParameter of decoratedParameterArray) {
+              const _parameter = decoratedParameter || new Parameter();
+              parameterArray.push(_parameter);
+
+              const name = parameterNames.shift();
+              name && _parameter.setName(name)
+            }
           }
         });
       }

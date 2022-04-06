@@ -1,8 +1,8 @@
-import { Injectable } from '../common';
+import { DecoratedClass } from '../common';
 import { Scanner } from '../control';
 import { zone } from '../generator';
 
-describe('method decorator tests', function() {
+describe('basic method decorator tests', function() {
   const scanner = Scanner.getInstance({
     rootPath: __dirname
   });
@@ -17,7 +17,7 @@ describe('method decorator tests', function() {
     return zone(myZone).methodDecorator({ isMotion: true });
   }
 
-  @Injectable()
+  @DecoratedClass()
   class Bunny {
     @Motion()
     public run(): void {

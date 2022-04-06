@@ -2,6 +2,6 @@ import { zone } from './generator';
 
 export const reflectZone = Symbol('reflectZone');
 
-export function Injectable(): ClassDecorator {
+export function DecoratedClass(): ClassDecorator {
   return zone(reflectZone).classDecorator();
 }

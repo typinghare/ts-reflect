@@ -1,8 +1,8 @@
-import { Injectable } from '../common';
+import { DecoratedClass } from '../common';
 import {   zone } from '../generator';
 import { Scanner } from '../control';
 
-describe('accessor decorator tests', function() {
+describe('basic accessor decorator tests', function() {
   const scanner = Scanner.getInstance({
     rootPath: __dirname
   });
@@ -19,7 +19,7 @@ describe('accessor decorator tests', function() {
     return zone(myZone).accessorDecorator<AnimalAccessorContext>({ pattern });
   }
 
-  @Injectable()
+  @DecoratedClass()
   class Bunny {
     private _movingSpeed: number = 0;
 
@@ -59,7 +59,7 @@ describe('accessor decorator tests', function() {
     });
   }
 
-  @Injectable()
+  @DecoratedClass()
   class Hare {
     private _movingSpeed: number = 0;
 
@@ -77,8 +77,6 @@ describe('accessor decorator tests', function() {
     const bunnyReflector = classCollector.getByConstructor(Hare);
     const movingSpeedReflector = bunnyReflector?.getAccessor<AnimalAccessorContext>('movingSpeed');
     const unitConversion = movingSpeedReflector?.getContext(myZone, 'unitConversion');
-
-    console.log(unitConversion);
 
     if (unitConversion) {
       movingSpeed *= 1.6;
