@@ -1,20 +1,16 @@
-import { Scanner } from '../control';
+import { classContainer } from '../container';
 import { DecoratedClass } from '../common';
-import { zone } from '../generator';
+import { DecoratorGenerator } from '../generator';
 
 describe('basic property decorator tests', function() {
-  const scanner = Scanner.getInstance({
-    rootPath: __dirname
-  });
-  const classCollector = scanner.classCollector;
-  const myZone = Symbol('myZone');
+  const generator = new DecoratorGenerator();
 
   interface AnimalPropertyContext {
     pattern: string;
   }
 
   function Caption(pattern: string): PropertyDecorator {
-    return zone(myZone).propertyDecorator<AnimalPropertyContext>({ pattern });
+    return generator.propertyDecorator<AnimalPropertyContext>({ pattern });
   }
 
   @DecoratedClass()
@@ -26,10 +22,10 @@ describe('basic property decorator tests', function() {
   function getMovingSpeed(bunny: Bunny) {
     const movingSpeed = bunny.movingSpeed;
 
-    const bunnyReflector = classCollector.getByConstructor(Bunny);
+    const bunnyReflector = classContainer.getByConstructor(Bunny);
     const pattern = bunnyReflector
       ?.getProperty<AnimalPropertyContext>('movingSpeed')
-      ?.getContext(myZone, 'pattern');
+      ?.getContext('pattern');
     return pattern?.replace(/\(\*\)/g, movingSpeed.toString());
   }
 

@@ -1,14 +1,8 @@
-import { zone } from '../generator';
-import { Scanner } from '../control';
+import { DecoratorGenerator } from '../generator';
+import { classContainer } from '../container';
 
 describe('class decorator tests', function() {
-  const scanner = Scanner.getInstance({
-    rootPath: __dirname
-  });
-  const classCollector = scanner.classCollector;
-
-  const myZone = Symbol('myZone');
-  const generator = zone(myZone);
+  const generator = new DecoratorGenerator();
 
   interface MyClassContext {
     scope: 'singleton' | 'prototype' | 'request';
@@ -23,23 +17,17 @@ describe('class decorator tests', function() {
   }
 
   it('should be exists', function() {
-    expect(classCollector.getByConstructor(Bunny)).toBeDefined();
+    expect(classContainer.getByConstructor(Bunny)).toBeDefined();
   });
 
   it('should contain the context', function() {
-    const bunnyReflector = classCollector.getByConstructor<MyClassContext>(Bunny);
-    expect(bunnyReflector?.getContext(myZone, 'scope')).toBe('singleton');
+    const bunnyReflector = classContainer.getByConstructor<MyClassContext>(Bunny);
+    expect(bunnyReflector?.getContext('scope')).toBe('singleton');
   });
 });
 
 describe('extends tests', function() {
-  const scanner = Scanner.getInstance({
-    rootPath: __dirname
-  });
-  const classCollector = scanner.classCollector;
-
-  const myZone = Symbol('myZone');
-  const generator = zone(myZone);
+  const generator = new DecoratorGenerator();
 
   interface AnimalClassContext {
     type: 'mammal' | 'avian' | 'invertebrate',
@@ -63,11 +51,11 @@ describe('extends tests', function() {
   }
 
   it('should have correct context', function() {
-    const mammalReflector = classCollector.getByConstructor<AnimalClassContext>(Mammal);
-    expect(mammalReflector?.getContext(myZone, 'type')).toBe('mammal');
+    const mammalReflector = classContainer.getByConstructor<AnimalClassContext>(Mammal);
+    expect(mammalReflector?.getContext('type')).toBe('mammal');
 
-    const bunnyReflector = classCollector.getByConstructor<AnimalClassContext>(Bunny);
-    expect(bunnyReflector?.getContext(myZone, 'type')).toBeUndefined();
+    const bunnyReflector = classContainer.getByConstructor<AnimalClassContext>(Bunny);
+    expect(bunnyReflector?.getContext('type')).toBeUndefined();
     expect(bunnyReflector?.getParent()).toBe(mammalReflector);
   });
 });

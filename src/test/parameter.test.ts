@@ -1,13 +1,8 @@
-import { Scanner } from '../control';
-import { zone } from '../generator';
+import { DecoratorGenerator } from '../generator';
+import { classContainer } from '../container';
 
 describe('basic parameter decorator tests', function() {
-  const scanner = Scanner.getInstance({
-    rootPath: __dirname
-  });
-  const classCollector = scanner.classCollector;
-  const myZone = Symbol('myZone');
-  const generator = zone(myZone);
+  const generator = new DecoratorGenerator();
 
   interface ClassContext {
     mapping: string;
@@ -36,7 +31,7 @@ describe('basic parameter decorator tests', function() {
   }
 
   function Param(name?: string): ParameterDecorator {
-    return zone(myZone).parameterDecorator<ParameterContext>({
+    return generator.parameterDecorator<ParameterContext>({
       from: 'param', name
     });
   }
@@ -54,13 +49,13 @@ describe('basic parameter decorator tests', function() {
       if (!url.startsWith(mapping)) continue;
 
       url = url.slice(mapping.length);
-      const controllerReflector = classCollector.getByConstructor(controller);
-      const decoratedMethodSet = controllerReflector?.getDecoratedMethodSet<MethodContext>();
+      const controllerReflector = classContainer.getByConstructor(controller);
+      const decoratedMethodSet = controllerReflector?.getDecoratedMethodCollector<MethodContext>();
       if (decoratedMethodSet) {
         for (const method of decoratedMethodSet) {
-          if (httpMethod !== method.getContext(myZone, 'httpMethod')) continue;
+          if (httpMethod !== method.getContext('httpMethod')) continue;
 
-          const mapping = method.getContext(myZone, 'mapping');
+          const mapping = method.getContext('mapping');
           if (!mapping) continue;
 
           const params: { [name: string]: string } = {};

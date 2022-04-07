@@ -1,21 +1,15 @@
 import {
   METADATA_KEY_ACCESSOR_SET,
   METADATA_KEY_CLASS,
+  METADATA_KEY_IS_CLASS_RENDERED,
   METADATA_KEY_METHOD_SET,
   METADATA_KEY_PARAMETER_ARRAY,
   METADATA_KEY_PROPERTY_SET
 } from './constant';
 import getParameterNames from '@captemulation/get-parameter-names';
-import { findOne } from './misc';
-import { Accessor, Class, Method, Parameter, Property } from './reflector';
-import { control } from './control';
-
-/**
- * Scanner config.
- */
-export interface ScannerConfig {
-  rootPath: string;
-}
+import { findOne, getMethodSet } from './misc';
+import { Accessor, Class, defaultZone, Method, Parameter, Property, Zone } from './reflector';
+import { classContainer } from './container';
 
 /**
  * Decorator generator.
@@ -25,14 +19,14 @@ export class DecoratorGenerator {
    * Specified zone.
    * @private
    */
-  private readonly _zone: symbol;
+  private readonly _zone: Zone;
 
   /**
    * Constructor.
    * @param zone
    */
-  constructor(zone: symbol) {
-    this._zone = zone;
+  constructor(zone?: Zone) {
+    this._zone = zone || defaultZone;
   }
 
   /**
@@ -46,50 +40,67 @@ export class DecoratorGenerator {
   ): ClassDecorator {
     return (constructor: Function): void => {
       const _class: Class<Context> =
-        Reflect.getOwnMetadata(METADATA_KEY_CLASS, constructor) || new Class(constructor.name, constructor);
+        Reflect.getOwnMetadata(METADATA_KEY_CLASS, constructor) || new Class(constructor);
       Reflect.defineMetadata(METADATA_KEY_CLASS, _class, constructor);
 
       // register to class collection
-      const scanner = control.scanner;
-      scanner && scanner.classCollector.register(_class);
+      classContainer.register(_class);
 
-      // load methods (if it hasn't been done)
-      if (_class.decoratedMethodSet === undefined) {
-        _class.decoratedMethodSet = Reflect.getMetadata(METADATA_KEY_METHOD_SET, constructor) || new Set<Method>();
-        _class.decoratedMethodSet && _class.decoratedMethodSet.forEach(decoratedMethod => {
+      // render class
+      const isClassRendered = Reflect.getOwnMetadata(METADATA_KEY_IS_CLASS_RENDERED, constructor);
+      if (!isClassRendered) {
+        Reflect.defineMetadata(METADATA_KEY_IS_CLASS_RENDERED, true, constructor);
+
+        // load methods (if it hasn't been done)
+        const methodCollector = _class.getMethodCollector();
+        const decoratedMethodSet: Set<Method> | undefined = Reflect.getMetadata(METADATA_KEY_METHOD_SET, constructor);
+        const methodSet: Set<Function> = getMethodSet(constructor);
+
+        for (const method of methodSet) {
+          let decoratedMethod = null;
+          if (decoratedMethodSet) {
+            decoratedMethod = findOne(decoratedMethodSet, (decoratedMethod) =>
+              decoratedMethod.getName() === method.name);
+          }
+          decoratedMethod = decoratedMethod || new Method(method);
+          methodCollector.add(decoratedMethod);
+
+          // set parameters
           const parameterArray = decoratedMethod.getParameterArray();
           const decoratedParameterArray: Array<Parameter | null>
             = Reflect.getOwnMetadata(METADATA_KEY_PARAMETER_ARRAY, constructor, decoratedMethod.getName());
 
           const parameterNames = getParameterNames(decoratedMethod.getValue());
-          if (decoratedParameterArray) {
-            for (const decoratedParameter of decoratedParameterArray) {
-              const _parameter = decoratedParameter || new Parameter();
-              parameterArray.push(_parameter);
+          parameterNames.forEach((name, index) => {
+            const _parameter = decoratedParameterArray ?
+              decoratedParameterArray[index] || new Parameter() :
+              new Parameter();
+            parameterArray.push(_parameter);
+            _parameter.setName(name);
+          });
+        }
 
-              const name = parameterNames.shift();
-              name && _parameter.setName(name)
-            }
+        // load accessors (if it hasn't been done)
+        const accessorCollector = _class.getAccessorCollector();
+        const decoratedAccessorSet: Set<Accessor> | undefined = Reflect.getMetadata(METADATA_KEY_ACCESSOR_SET, constructor);
+        if (decoratedAccessorSet) {
+          for (const decoratedAccessor of decoratedAccessorSet) {
+            accessorCollector.add(decoratedAccessor);
           }
-        });
-      }
+        }
 
-      // load accessors (if it hasn't been done)
-      if (_class.decoratedAccessorSet === undefined) {
-        _class.decoratedAccessorSet =
-          Reflect.getMetadata(METADATA_KEY_ACCESSOR_SET, constructor) || new Set<Accessor>();
-      }
-
-      // load properties (if it hasn't been done)
-      if (_class.decoratedPropertySet === undefined) {
-        _class.decoratedPropertySet =
-          Reflect.getMetadata(METADATA_KEY_PROPERTY_SET, constructor) || new Set<Property>();
+        // load properties (if it hasn't been done)
+        const propertyCollector = _class.getPropertyCollector();
+        const decoratedPropertySet: Set<Property> | undefined = Reflect.getMetadata(METADATA_KEY_PROPERTY_SET, constructor);
+        if (decoratedPropertySet) {
+          for (const decoratedProperty of decoratedPropertySet) {
+            propertyCollector.add(decoratedProperty);
+          }
+        }
       }
 
       // set context
-      const _context = _class.getContext(this._zone) || {};
-      Object.assign(_context, context);
-      _class.setContext(this._zone, _context);
+      context && _class.setContext(context, this._zone);
       decorator && decorator.apply(_class, [constructor]);
     };
   }
@@ -110,11 +121,12 @@ export class DecoratorGenerator {
       Reflect.defineMetadata(METADATA_KEY_METHOD_SET, methodSet, constructor);
 
       const method = findOne(methodSet, method => method.getName() === methodName)
-        || new Method<Context>(methodName.toString(), descriptor.value);
+        || new Method<Context>(descriptor.value);
       methodSet.add(method);
+      method.decorated();
 
       // set context
-      context && method.setContext(this._zone, context);
+      context && method.setContext(context, this._zone);
       decorator && decorator.apply(method, [target, methodName, descriptor]);
     };
   }
@@ -137,11 +149,13 @@ export class DecoratorGenerator {
       const accessor = findOne(accessorSet, accessor => accessor.getName() === accessorName)
         || new Accessor<Context>(accessorName.toString());
       accessorSet.add(accessor);
+      accessor.decorated();
+
       if (descriptor.get !== undefined) accessor.getter = descriptor.get;
       if (descriptor.set !== undefined) accessor.setter = descriptor.set;
 
       // set context
-      context && accessor.setContext(this._zone, context);
+      context && accessor.setContext(context, this._zone);
       decorator && decorator.apply(accessor, [target, accessorName, descriptor]);
     };
   }
@@ -165,9 +179,10 @@ export class DecoratorGenerator {
       const property = findOne(propertySet, (property) => property.getName() === propertyName)
         || new Property(propertyName.toString());
       propertySet.add(property);
+      property.decorated();
 
       // set context
-      context && property.setContext(this._zone, context);
+      context && property.setContext(context, this._zone);
       decorator && decorator.apply(property, [target, propertyName]);
     };
   }
@@ -189,19 +204,11 @@ export class DecoratorGenerator {
 
       const parameter: Parameter<Context> = parameterArray[parameterIndex] || new Parameter();
       parameterArray[parameterIndex] = parameter;
+      parameter.decorated();
 
       // set context
-      context && parameter.setContext(this._zone, context);
+      context && parameter.setContext(context, this._zone);
       decorator && decorator.apply(parameter, [target, methodName, parameterIndex]);
     };
   }
 }
-
-/**
- * Get a decorator generator of a specified zone.
- * @param zone
- */
-export function zone(zone: symbol): DecoratorGenerator {
-  return new DecoratorGenerator(zone);
-}
-

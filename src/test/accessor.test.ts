@@ -1,13 +1,9 @@
 import { DecoratedClass } from '../common';
-import {   zone } from '../generator';
-import { Scanner } from '../control';
+import { DecoratorGenerator } from '../generator';
+import { classContainer } from '../container';
 
 describe('basic accessor decorator tests', function() {
-  const scanner = Scanner.getInstance({
-    rootPath: __dirname
-  });
-  const classCollector = scanner.classCollector;
-  const myZone = Symbol('myZone');
+  const generator = new DecoratorGenerator();
 
   interface AnimalAccessorContext {
     pattern: string;
@@ -16,7 +12,7 @@ describe('basic accessor decorator tests', function() {
   }
 
   function Caption(pattern: string): MethodDecorator {
-    return zone(myZone).accessorDecorator<AnimalAccessorContext>({ pattern });
+    return generator.accessorDecorator<AnimalAccessorContext>({ pattern });
   }
 
   @DecoratedClass()
@@ -36,9 +32,9 @@ describe('basic accessor decorator tests', function() {
   function getMovingSpeedCaption(bunny: Bunny): string {
     const movingSpeed = bunny.movingSpeed;
 
-    const bunnyReflector = classCollector.getByConstructor(Bunny);
+    const bunnyReflector = classContainer.getByConstructor(Bunny);
     const movingSpeedReflector = bunnyReflector?.getAccessor<AnimalAccessorContext>('movingSpeed');
-    const caption = movingSpeedReflector?.getContext(myZone, 'pattern');
+    const caption = movingSpeedReflector?.getContext('pattern');
 
     if (caption !== undefined) {
       return caption.replace(/\(\*\)/g, movingSpeed.toString());
@@ -54,7 +50,7 @@ describe('basic accessor decorator tests', function() {
   });
 
   function UnitConversion() {
-    return zone(myZone).accessorDecorator<AnimalAccessorContext>({
+    return generator.accessorDecorator<AnimalAccessorContext>({
       unitConversion: true
     });
   }
@@ -74,24 +70,24 @@ describe('basic accessor decorator tests', function() {
   }
 
   function setMovingSpeed(hare: Hare, movingSpeed: number): void {
-    const bunnyReflector = classCollector.getByConstructor(Hare);
+    const bunnyReflector = classContainer.getByConstructor(Hare);
     const movingSpeedReflector = bunnyReflector?.getAccessor<AnimalAccessorContext>('movingSpeed');
-    const unitConversion = movingSpeedReflector?.getContext(myZone, 'unitConversion');
+    const unitConversion = movingSpeedReflector?.getContext('unitConversion');
 
     if (unitConversion) {
       movingSpeed *= 1.6;
-      movingSpeedReflector?.setContext(myZone, 'unit', 'km');
+      movingSpeedReflector?.setContext('unit', 'km');
     } else {
-      movingSpeedReflector?.setContext(myZone, 'unit', 'mile');
+      movingSpeedReflector?.setContext('unit', 'mile');
     }
 
     hare.movingSpeed = movingSpeed;
   }
 
   function getMovingSpeed(hare: Hare): string {
-    const bunnyReflector = classCollector.getByConstructor(Hare);
+    const bunnyReflector = classContainer.getByConstructor(Hare);
     const movingSpeedReflector = bunnyReflector?.getAccessor<AnimalAccessorContext>('movingSpeed');
-    const unit = movingSpeedReflector?.getContext(myZone, 'unit');
+    const unit = movingSpeedReflector?.getContext('unit');
 
     return `${hare.movingSpeed}${unit}/h`;
   }

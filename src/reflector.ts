@@ -1,16 +1,32 @@
 import 'reflect-metadata';
-import { findOne } from './misc';
-import { control } from './control';
+import { classContainer } from './container';
+import { Collector } from './collector';
 
 /**
  * General type of constructor function.
  */
 export type Constructor<Class = object> = (new (...args: any[]) => Class) | Function;
 
+export type AnyMap = { [key: string | symbol | number]: any };
+
+export class Zone {
+  private readonly _label: string;
+
+  constructor(label: string) {
+    this._label = label;
+  }
+
+  public get label(): string {
+    return this._label;
+  }
+}
+
+export const defaultZone = new Zone('defaultZone');
+
 /**
  * Decorative interface.
  */
-export interface Decorative<Context extends object> {
+export interface Decorative<Context extends AnyMap> {
   /**
    * Set decorative context.
    * @param zone: symbol
@@ -43,7 +59,13 @@ export interface Decorative<Context extends object> {
 /**
  * Abstract reflector.
  */
-export class AbstractReflector<Context extends object = Object> implements Decorative<Context> {
+export abstract class Reflector<Context extends AnyMap> implements Decorative<Context> {
+  /**
+   * Whether is decorated.
+   * @protected
+   */
+  protected _isDecorated: boolean = false;
+
   /**
    * The name of the reflected object.
    * @protected
@@ -54,7 +76,7 @@ export class AbstractReflector<Context extends object = Object> implements Decor
    * Decorative context map.
    * @protected
    */
-  protected readonly _decorativeContextMap: Map<symbol, Context> = new Map();
+  protected readonly _decorativeContextMap: Map<Zone, Context> = new Map();
 
   /**
    * Constructor.
@@ -64,28 +86,69 @@ export class AbstractReflector<Context extends object = Object> implements Decor
     this.name = name;
   }
 
-  public getContext(zone: symbol): Context | undefined;
-  public getContext<K extends keyof Context>(zone: symbol, key: K): Context[K] | undefined;
-  public getContext<K extends keyof Context>(zone: symbol, key?: K): Context | Context[K] | undefined {
-    const decorativeContext = this._decorativeContextMap.get(zone);
-
-    if (key === undefined) {
-      return decorativeContext;
+  public getContext(): Context | undefined;
+  public getContext(zone: Zone): Context | undefined;
+  public getContext<K extends keyof Context>(key: K): Context[K] | undefined;
+  public getContext<K extends keyof Context>(key: K, zone: Zone): Context[K] | undefined;
+  /**
+   * Get context.
+   * @param key
+   * @param zone
+   */
+  public getContext<K extends keyof Context>(key?: K, zone?: Zone): Context | Context[K] | undefined {
+    if (zone === undefined) {
+      if (key === undefined) {
+        return this._decorativeContextMap.get(defaultZone);
+      } else if (key instanceof Zone) {
+        return this._decorativeContextMap.get(key);
+      } else {
+        const context = this._decorativeContextMap.get(defaultZone);
+        return context && context[key];
+      }
+    } else {
+      if (key === undefined) {
+        throw new TypeError('Key should not be undefined.');
+      } else {
+        const context = this._decorativeContextMap.get(zone);
+        return context && context[key];
+      }
     }
-
-    return decorativeContext && decorativeContext[key];
   }
 
-  public setContext(zone: symbol, context: Partial<Context>): void;
-  public setContext<K extends keyof Context>(zone: symbol, key: K, value: Context[K]): void;
-  public setContext<K extends keyof Context>(zone: symbol, key: K | Partial<Context>, value?: Context[K]): void {
-    const context = this.getContext(zone) || <Context>{};
-    this._decorativeContextMap.set(zone, context);
+  public setContext(context: Partial<Context>): void;
+  public setContext(context: Partial<Context>, zone: Zone): void;
+  public setContext<K extends keyof Context>(key: K, value: Context[K]): void;
+  public setContext<K extends keyof Context>(key: K, value: Context[K], zone: Zone): void;
+  /**
+   * Set context.
+   * @param key
+   * @param value
+   * @param zone
+   */
+  public setContext<K extends keyof Context>(key: K | Partial<Context>, value?: Context[K] | Zone, zone?: Zone): void {
+    if (zone === undefined) {
+      let zone = defaultZone;
+      if (value instanceof Zone) {
+        zone = value;
+      }
 
-    if (value === undefined) {
-      Object.assign(context, key);
+      if (value === undefined || value instanceof Zone) {
+        const _context = this._decorativeContextMap.get(zone) || <Context>{};
+        this._decorativeContextMap.set(zone, _context);
+        _context && Object.assign(_context, key);
+      } else {
+        const _context = this._decorativeContextMap.get(defaultZone) || <Context>{};
+        this._decorativeContextMap.set(zone, _context);
+        if (_context) {
+          _context[<K>key] = value;
+        }
+      }
     } else {
-      context[<K>key] = value;
+      const _context = this._decorativeContextMap.get(zone) || <Context>{};
+      this._decorativeContextMap.set(zone, _context);
+      if (_context) {
+        _context[<K>key] = <Context[K]>value;
+      }
     }
   }
 
@@ -104,22 +167,36 @@ export class AbstractReflector<Context extends object = Object> implements Decor
   public getName(): string {
     return this.name;
   }
+
+  /**
+   * Set the reflector decorated.
+   */
+  public decorated(): void {
+    this._isDecorated = true;
+  }
+
+  /**
+   * Whether is decorated.
+   */
+  public isDecorated(): boolean {
+    return this._isDecorated;
+  }
 }
 
 /**
  * Class reflector.
  */
-export class Class<Context extends object = object> extends AbstractReflector<Context> {
+export class Class<Context extends AnyMap = any> extends Reflector<Context> {
   private readonly _constructor: Constructor;
 
-  public decoratedMethodSet: Set<Method<any>> | undefined;
+  private readonly _methodCollector: Collector<Method<any>> = new Collector();
 
-  public decoratedAccessorSet: Set<Accessor<any>> | undefined;
+  private readonly _accessorCollector: Collector<Accessor<any>> = new Collector();
 
-  public decoratedPropertySet: Set<Property<any>> | undefined;
+  private readonly _propertyCollector: Collector<Property<any>> = new Collector();
 
-  public constructor(name: string, _constructor: Constructor) {
-    super(name);
+  public constructor(_constructor: Constructor) {
+    super(_constructor.name);
     this._constructor = _constructor;
   }
 
@@ -127,48 +204,66 @@ export class Class<Context extends object = object> extends AbstractReflector<Co
     return this._constructor;
   }
 
-  public getDecoratedMethodSet<MethodContext extends object>(): Set<Method<MethodContext>> {
-    return <Set<Method<MethodContext>>>this.decoratedMethodSet;
+  public getMethodCollector<MethodContext extends object>(): Collector<Method<MethodContext>> {
+    return this._methodCollector;
   }
 
-  public getMethod<MethodContext extends object = object>(name: string): Method<MethodContext> | null {
-    if (this.decoratedMethodSet === undefined) return null;
-    return findOne<Method<MethodContext>>(this.decoratedMethodSet, (method) => method.getName() === name);
+  public getAccessorCollector<AccessorContext extends object>(): Collector<Accessor<AccessorContext>> {
+    return this._accessorCollector;
   }
 
-  public getAccessor<AccessorContext extends object = object>(name: string): Accessor<AccessorContext> | null {
-    if (this.decoratedAccessorSet === undefined) return null;
-    return findOne<Accessor<AccessorContext>>(this.decoratedAccessorSet, (accessor) => accessor.getName() === name);
+  public getPropertyCollector<PropertySet extends object>(): Collector<Property<PropertySet>> {
+    return this._propertyCollector;
   }
 
-  public getProperty<PropertyContext extends object = object>(name: string): Property<PropertyContext> | null {
-    if (this.decoratedPropertySet === undefined) return null;
-    return findOne<Property<PropertyContext>>(this.decoratedPropertySet, (property) => property.getName() === name);
+  public getDecoratedMethodCollector<MethodContext extends object>(): Collector<Method<MethodContext>> {
+    return this._methodCollector.collect(method => method.isDecorated());
+  }
+
+  public getDecoratedAccessorCollector<AccessorContext extends object>(): Collector<Accessor<AccessorContext>> {
+    return this._accessorCollector.collect(accessor => accessor.isDecorated());
+  }
+
+  public getDecoratedPropertyCollector<PropertyContext extends object>(): Collector<Property<PropertyContext>> {
+    return this._propertyCollector.collect(property => property.isDecorated());
+  }
+
+  public getMethod<MethodContext extends AnyMap = any>(name: string): Method<MethodContext> | null {
+    return this._methodCollector.find((method) => method.getName() === name);
+  }
+
+  public getAccessor<AccessorContext extends AnyMap = any>(name: string): Accessor<AccessorContext> | null {
+    return this._accessorCollector.find((method) => method.getName() === name);
+  }
+
+  public getProperty<PropertyContext extends AnyMap = any>(name: string): Property<PropertyContext> | null {
+    return this._propertyCollector.find((method) => method.getName() === name);
   }
 
   /**
    * Get parent class reflector.
    */
-  public getParent<ParentContext extends object = object>(): Class<ParentContext> | null {
-    const scanner = control.scanner;
-    if (!scanner) return null;
+  public getParent<ParentContext extends AnyMap = any>(): Class<ParentContext> | null {
+    const constructorPrototype = Object.getPrototypeOf(this._constructor);
+    if (constructorPrototype.name.length === 0) {
+      // No self-defined parent class
+      return null;
+    }
 
-    const parent = Object.getPrototypeOf(this._constructor);
-    if (parent.name.length === 0) return null;
-    return scanner.classCollector.getByConstructor<ParentContext>(parent) || null;
+    return classContainer.getByConstructor<ParentContext>(constructorPrototype) || null;
   }
 }
 
 /**
  * Method reflector.
  */
-export class Method<Context extends object = object> extends AbstractReflector<Context> {
+export class Method<Context extends AnyMap = any> extends Reflector<Context> {
   private readonly _value: Function;
 
   public _parameterArray: Array<Parameter<any>> = [];
 
-  public constructor(name: string, value: Function) {
-    super(name);
+  public constructor(value: Function) {
+    super(value.name);
     this._value = value;
   }
 
@@ -195,7 +290,7 @@ export class Method<Context extends object = object> extends AbstractReflector<C
 /**
  * Accessor reflector.
  */
-export class Accessor<Context extends object = object> extends AbstractReflector<Context> {
+export class Accessor<Context extends AnyMap = any> extends Reflector<Context> {
   public getter: Function | undefined;
 
   public setter: Function | undefined;
@@ -204,14 +299,14 @@ export class Accessor<Context extends object = object> extends AbstractReflector
 /**
  * Property reflector.
  */
-export class Property<Context extends object = object> extends AbstractReflector<Context> {
+export class Property<Context extends AnyMap = any> extends Reflector<Context> {
 
 }
 
 /**
  * Parameter reflector.
  */
-export class Parameter<Context extends object = object> extends AbstractReflector<Context> {
+export class Parameter<Context extends AnyMap = any> extends Reflector<Context> {
   constructor() {
     super('');
   }

@@ -1,20 +1,16 @@
 import { DecoratedClass } from '../common';
-import { Scanner } from '../control';
-import { zone } from '../generator';
+import { classContainer } from '../container';
+import { DecoratorGenerator } from '../generator';
 
 describe('basic method decorator tests', function() {
-  const scanner = Scanner.getInstance({
-    rootPath: __dirname
-  });
-  const classCollector = scanner.classCollector;
-  const myZone = Symbol('myZone');
+  const generator = new DecoratorGenerator();
 
   interface AnimalMethodContext {
     isMotion: boolean;
   }
 
   function Motion(): MethodDecorator {
-    return zone(myZone).methodDecorator({ isMotion: true });
+    return generator.methodDecorator({ isMotion: true });
   }
 
   @DecoratedClass()
@@ -26,9 +22,9 @@ describe('basic method decorator tests', function() {
   }
 
   it('should be motion', function() {
-    const bunnyReflector = classCollector.getByConstructor(Bunny);
+    const bunnyReflector = classContainer.getByConstructor(Bunny);
     const runReflector = bunnyReflector?.getMethod<AnimalMethodContext>('run');
     expect(runReflector?.getValue()).toBe(new Bunny().run);
-    expect(runReflector?.getContext(myZone, 'isMotion')).toBe(true);
+    expect(runReflector?.getContext('isMotion')).toBe(true);
   });
 });

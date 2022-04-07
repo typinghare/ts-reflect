@@ -1,7 +1,6 @@
-import { zone } from './generator';
-
-export const reflectZone = Symbol('reflectZone');
+import { defaultZone } from './reflector';
+import { DecoratorGenerator } from './generator';
 
 export function DecoratedClass(): ClassDecorator {
-  return zone(reflectZone).classDecorator();
+  return new DecoratorGenerator(defaultZone).classDecorator();
 }
