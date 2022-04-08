@@ -7,8 +7,8 @@ import {
   METADATA_KEY_PROPERTY_SET
 } from './constant';
 import getParameterNames from '@captemulation/get-parameter-names';
-import { findOne, getMethodSet } from './misc';
-import { Accessor, Class, defaultZone, Method, Parameter, Property, Zone } from './reflector';
+import { findOne, getAccessorMap, getMethodSet } from './misc';
+import { Accessor, AnyMap, Class, defaultZone, Method, Parameter, Property, Zone } from './reflector';
 import { classContainer } from './container';
 
 /**
@@ -34,7 +34,7 @@ export class DecoratorGenerator {
    * @param context
    * @param decorator
    */
-  public classDecorator<Context extends object = object>(
+  public classDecorator<Context extends AnyMap>(
     context?: Partial<Context>,
     decorator?: (this: Class<Context>, ...args: Parameters<ClassDecorator>) => void
   ): ClassDecorator {
@@ -53,7 +53,8 @@ export class DecoratorGenerator {
 
         // load methods (if it hasn't been done)
         const methodCollector = _class.getMethodCollector();
-        const decoratedMethodSet: Set<Method> | undefined = Reflect.getMetadata(METADATA_KEY_METHOD_SET, constructor);
+        const decoratedMethodSet: Set<Method> | undefined
+          = Reflect.getMetadata(METADATA_KEY_METHOD_SET, constructor);
         const methodSet: Set<Function> = getMethodSet(constructor);
 
         for (const method of methodSet) {
@@ -82,11 +83,21 @@ export class DecoratorGenerator {
 
         // load accessors (if it hasn't been done)
         const accessorCollector = _class.getAccessorCollector();
-        const decoratedAccessorSet: Set<Accessor> | undefined = Reflect.getMetadata(METADATA_KEY_ACCESSOR_SET, constructor);
-        if (decoratedAccessorSet) {
-          for (const decoratedAccessor of decoratedAccessorSet) {
-            accessorCollector.add(decoratedAccessor);
+        const decoratedAccessorSet: Set<Accessor> | undefined
+          = Reflect.getMetadata(METADATA_KEY_ACCESSOR_SET, constructor);
+        const accessorMap = getAccessorMap(constructor);
+        for (const [name, descriptor] of Object.entries(accessorMap)) {
+          let decoratedAccessor = null;
+          if (decoratedAccessorSet) {
+            decoratedAccessor = findOne(decoratedAccessorSet, (decoratedAccessor) =>
+              decoratedAccessor.getName() === name);
           }
+          if (!decoratedAccessor) {
+            decoratedAccessor = new Accessor(name);
+            decoratedAccessor.getter = descriptor.getter;
+            decoratedAccessor.setter = descriptor.setter;
+          }
+          accessorCollector.add(decoratedAccessor);
         }
 
         // load properties (if it hasn't been done)
@@ -110,7 +121,7 @@ export class DecoratorGenerator {
    * @param context
    * @param decorator
    */
-  public methodDecorator<Context extends object = object>(
+  public methodDecorator<Context extends AnyMap>(
     context?: Partial<Context>,
     decorator?: (this: Method<Context>, ...args: Parameters<MethodDecorator>) => void
   ): MethodDecorator {
@@ -136,7 +147,7 @@ export class DecoratorGenerator {
    * @param context
    * @param decorator
    */
-  public accessorDecorator<Context extends object = object>(
+  public accessorDecorator<Context extends AnyMap>(
     context?: Partial<Context>,
     decorator?: (this: Accessor<Context>, ...args: Parameters<MethodDecorator>) => void
   ): MethodDecorator {
@@ -165,7 +176,7 @@ export class DecoratorGenerator {
    * @param context
    * @param decorator
    */
-  public propertyDecorator<Context extends object = object>(
+  public propertyDecorator<Context extends AnyMap>(
     context?: Partial<Context>,
     decorator?: (this: Property<Context>, ...args: Parameters<PropertyDecorator>) => void
   ): PropertyDecorator {
@@ -192,7 +203,7 @@ export class DecoratorGenerator {
    * @param context
    * @param decorator
    */
-  public parameterDecorator<Context extends object = object>(
+  public parameterDecorator<Context extends AnyMap>(
     context?: Partial<Context>,
     decorator?: (this: Parameter<Context>, ...args: Parameters<ParameterDecorator>) => void
   ): ParameterDecorator {

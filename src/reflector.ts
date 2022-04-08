@@ -7,8 +7,18 @@ import { Collector } from './collector';
  */
 export type Constructor<Class = object> = (new (...args: any[]) => Class) | Function;
 
+/**
+ * The parent type of context.
+ */
 export type AnyMap = { [key: string | symbol | number]: any };
 
+/**
+ * The zone.
+ * In order to avoid the occurrence of keys collision, ts-reflect introduces the zone.
+ * Users are able to create their own zone and pass it to functions, such as
+ * <getContext> and <setContext>, when needed.
+ * When it is omitted, the <defaultZone> will be passed.
+ */
 export class Zone {
   private readonly _label: string;
 
@@ -21,6 +31,9 @@ export class Zone {
   }
 }
 
+/**
+ * The default zone passed to <getContext> and <setContext>.
+ */
 export const defaultZone = new Zone('defaultZone');
 
 /**
@@ -189,11 +202,17 @@ export abstract class Reflector<Context extends AnyMap> implements Decorative<Co
 export class Class<Context extends AnyMap = any> extends Reflector<Context> {
   private readonly _constructor: Constructor;
 
-  private readonly _methodCollector: Collector<Method<any>> = new Collector();
+  private readonly _methodCollector: Collector<Method> = new Collector();
 
-  private readonly _accessorCollector: Collector<Accessor<any>> = new Collector();
+  private readonly _accessorCollector: Collector<Accessor> = new Collector();
 
-  private readonly _propertyCollector: Collector<Property<any>> = new Collector();
+  /**
+   * Under the framework of Javascript, properties of a class, unlike methods and accessors,
+   * cannot be accessed by constructor, but can be accessed by an instance of the class.
+   * Therefore, ts-reflect will not provide reflectors for properties without decorator.
+   * @private
+   */
+  private readonly _propertyCollector: Collector<Property> = new Collector();
 
   public constructor(_constructor: Constructor) {
     super(_constructor.name);
@@ -204,27 +223,27 @@ export class Class<Context extends AnyMap = any> extends Reflector<Context> {
     return this._constructor;
   }
 
-  public getMethodCollector<MethodContext extends object>(): Collector<Method<MethodContext>> {
+  public getMethodCollector<MethodContext extends AnyMap>(): Collector<Method<MethodContext>> {
     return this._methodCollector;
   }
 
-  public getAccessorCollector<AccessorContext extends object>(): Collector<Accessor<AccessorContext>> {
+  public getAccessorCollector<AccessorContext extends AnyMap>(): Collector<Accessor<AccessorContext>> {
     return this._accessorCollector;
   }
 
-  public getPropertyCollector<PropertySet extends object>(): Collector<Property<PropertySet>> {
+  public getPropertyCollector<PropertySet extends AnyMap>(): Collector<Property<PropertySet>> {
     return this._propertyCollector;
   }
 
-  public getDecoratedMethodCollector<MethodContext extends object>(): Collector<Method<MethodContext>> {
+  public getDecoratedMethodCollector<MethodContext extends AnyMap>(): Collector<Method<MethodContext>> {
     return this._methodCollector.collect(method => method.isDecorated());
   }
 
-  public getDecoratedAccessorCollector<AccessorContext extends object>(): Collector<Accessor<AccessorContext>> {
+  public getDecoratedAccessorCollector<AccessorContext extends AnyMap>(): Collector<Accessor<AccessorContext>> {
     return this._accessorCollector.collect(accessor => accessor.isDecorated());
   }
 
-  public getDecoratedPropertyCollector<PropertyContext extends object>(): Collector<Property<PropertyContext>> {
+  public getDecoratedPropertyCollector<PropertyContext extends AnyMap>(): Collector<Property<PropertyContext>> {
     return this._propertyCollector.collect(property => property.isDecorated());
   }
 
@@ -260,7 +279,7 @@ export class Class<Context extends AnyMap = any> extends Reflector<Context> {
 export class Method<Context extends AnyMap = any> extends Reflector<Context> {
   private readonly _value: Function;
 
-  public _parameterArray: Array<Parameter<any>> = [];
+  public _parameterArray: Array<Parameter> = [];
 
   public constructor(value: Function) {
     super(value.name);
@@ -271,18 +290,18 @@ export class Method<Context extends AnyMap = any> extends Reflector<Context> {
     return this._value;
   }
 
-  public getParameterArray<ParameterContext extends object>(): Array<Parameter<ParameterContext>> {
+  public getParameterArray<ParameterContext extends AnyMap>(): Array<Parameter<ParameterContext>> {
     return this._parameterArray;
   }
 
-  public getParameterByName<ParameterContext extends object>(name: string): Parameter<ParameterContext> | undefined {
+  public getParameterByName<ParameterContext extends AnyMap>(name: string): Parameter<ParameterContext> | undefined {
     for (const _parameter of this._parameterArray) {
       if (_parameter.getName() === name) return _parameter;
     }
     return undefined;
   }
 
-  public getParameterByIndex<ParameterContext extends object>(index: number): Parameter<ParameterContext> | undefined {
+  public getParameterByIndex<ParameterContext extends AnyMap>(index: number): Parameter<ParameterContext> | undefined {
     return this._parameterArray[index];
   }
 }

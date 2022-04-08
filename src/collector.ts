@@ -1,6 +1,12 @@
-export class Collector<T> implements Iterable<T> {
+export class Collector<T> implements Iterable<T> {/**
+   * The set of elements.
+   * @private
+   */
   private readonly _set: Set<T> = new Set();
 
+  /**
+   * Iterable implementation.
+   */
   [Symbol.iterator](): Iterator<T> {
     return this._set[Symbol.iterator]();
   }
@@ -56,5 +62,16 @@ export class Collector<T> implements Iterable<T> {
     }
 
     return null;
+  }
+
+  /**
+   * Foreach function.
+   * @param cb
+   */
+  public forEach(cb: (value: T) => void): this {
+    for (const element of this._set) {
+      cb(element);
+    }
+    return this
   }
 }

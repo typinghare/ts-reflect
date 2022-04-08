@@ -31,6 +31,7 @@ export function getMethodSet(_class: Function): Set<Function> {
 /**
  * Get map of accessors of a class.
  * @param _class
+ * @return map reflection: name => descriptor
  */
 export function getAccessorMap(_class: Function): Map<string, TypedPropertyDescriptor<any>> {
   const map: Map<string, TypedPropertyDescriptor<any>> = new Map();
