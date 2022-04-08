@@ -5,7 +5,7 @@ import { Collector } from './collector';
 /**
  * General type of constructor function.
  */
-export type Constructor<Class = object> = (new (...args: any[]) => Class) | Function;
+export type Constructor<ClassType = object> = (new (...args: any[]) => ClassType) | Function;
 
 /**
  * The parent type of context.

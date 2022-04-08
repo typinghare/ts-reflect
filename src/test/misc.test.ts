@@ -1,4 +1,4 @@
-import { findOne, getAccessorMap, getMethodSet } from '../misc';
+import { findOne, getAccessorMap, getConstructor, getMethodSet } from '../misc';
 
 describe('misc tests', function() {
   it('should find the specified element', function() {
@@ -21,7 +21,7 @@ describe('misc tests', function() {
       }
     }
 
-    const set = getMethodSet(new Test().constructor);
+    const set = getMethodSet(getConstructor(Test));
     expect(set.size).toBe(3);
 
     const names: string[] = [];
@@ -49,7 +49,7 @@ describe('misc tests', function() {
       }
     }
 
-    const map = getAccessorMap(new Test().constructor);
+    const map = getAccessorMap(getConstructor(Test));
     expect(map.size).toBe(2);
 
     const names: string[] = [];

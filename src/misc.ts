@@ -3,6 +3,7 @@
  * @param iterable
  * @param predicate
  */
+
 export function findOne<T>(iterable: Iterable<T>, predicate: (element: T) => boolean): T | null {
   for (const element of iterable) {
     if (predicate(element)) return element;
@@ -44,4 +45,12 @@ export function getAccessorMap(_class: Function): Map<string, TypedPropertyDescr
   }
 
   return map;
+}
+
+/**
+ * Get the constructor of a class.
+ * @param _class
+ */
+export function getConstructor(_class: new (...args: any[]) => object) {
+  return new _class().constructor;
 }
