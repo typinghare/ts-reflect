@@ -1,0 +1,23 @@
+{
+  "name": "ts-reflect",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@captemulation/get-parameter-names": "^1.4.2",
+    "@types/lodash": "^4.14.191",
+    "@types/node": "^18.15.6",
+    "lodash": "^4.17.21",
+    "reflect-metadata": "^0.1.13"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.0",
+    "ts-jest": "^29.0.5"
+  }
+}
