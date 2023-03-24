@@ -1,5 +1,5 @@
 import { Class, Constructor } from './Reflector'
-import { GenericObject } from './Decorative'
+import { Dict } from './Decorative'
 
 /**
  * Class container.
@@ -43,7 +43,7 @@ export class ClassContainer {
      * Returns a class reflector corresponding to the given constructor.
      * @param constructor
      */
-    public get<CC extends GenericObject = GenericObject>(
+    public get<CC extends Dict = Dict>(
         constructor: Constructor
     ): Class<CC> | undefined {
         return this._classMap.get(constructor) as Class<CC>

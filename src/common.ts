@@ -1,5 +1,5 @@
 import { DecoratorGenerator } from './core/DecoratorGenerator'
-import { GenericObject } from './core/Decorative'
+import { Dict } from './core/Decorative'
 import { Reflector } from './core/Reflector'
 import { Zone } from './core/Zone'
 import { ReflectorWrapper } from './core/ReflectorWrapper'
@@ -17,7 +17,7 @@ export function DecoratedClass(): ClassDecorator {
  * @param reflector
  * @param zone
  */
-export function contextOf<Context extends GenericObject>(
+export function contextOf<Context extends Dict>(
     reflector: Reflector<Context>,
     zone: Zone
 ): ReflectorWrapper<Context> {

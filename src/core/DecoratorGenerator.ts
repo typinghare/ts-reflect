@@ -1,6 +1,6 @@
 import { Zone } from './Zone'
 import { Accessor, Class, Constructor, Method, Name, Parameter, Property } from './Reflector'
-import { GenericObject } from './Decorative'
+import { Dict } from './Decorative'
 import { ReflectorWrapper } from './ReflectorWrapper'
 import { defaultTo, find, isNull, isUndefined } from 'lodash'
 import {
@@ -22,7 +22,7 @@ type BuiltinDecorator = ClassDecorator | PropertyDecorator | MethodDecorator | P
 /**
  * A decorator.
  */
-export type Decorator<Context extends GenericObject, DecoratorType extends BuiltinDecorator> = (
+export type Decorator<Context extends Dict, DecoratorType extends BuiltinDecorator> = (
     this: ReflectorWrapper<Context>,
     ...args: Parameters<DecoratorType>
 ) => void
@@ -50,7 +50,7 @@ export class DecoratorGenerator {
      * @param context
      * @param decorator
      */
-    public generateClassDecorator<Context extends GenericObject>(
+    public generateClassDecorator<Context extends Dict>(
         context?: Partial<Context>,
         decorator?: Decorator<Context, ClassDecorator>
     ): ClassDecorator {
@@ -82,7 +82,7 @@ export class DecoratorGenerator {
      * @param context
      * @param decorator
      */
-    public generateMethodDecorator<Context extends GenericObject>(
+    public generateMethodDecorator<Context extends Dict>(
         context?: Partial<Context>,
         decorator?: Decorator<Context, MethodDecorator>
     ): MethodDecorator {
@@ -105,7 +105,7 @@ export class DecoratorGenerator {
                     )
 
                     for (let i = 0; i < parameterNames.length; i++) {
-                        const tempParameter = parameterArray[i]
+                        const tempParameter = parameterArray && parameterArray[i]
                         if (!isUndefined(tempParameter)) {
                             const parameter = new Parameter(parameterNames[i], true)
                             const context = tempParameter.getContext(this._zone)
@@ -133,7 +133,7 @@ export class DecoratorGenerator {
         }
     }
 
-    public generateAccessorDecorator<Context extends GenericObject>(
+    public generateAccessorDecorator<Context extends Dict>(
         context?: Partial<Context>,
         decorator?: Decorator<Context, MethodDecorator>
     ): MethodDecorator {
@@ -165,7 +165,7 @@ export class DecoratorGenerator {
      * @param context
      * @param decorator
      */
-    public generatePropertyDecorator<Context extends GenericObject>(
+    public generatePropertyDecorator<Context extends Dict>(
         context?: Partial<Context>,
         decorator?: Decorator<Context, PropertyDecorator>
     ): PropertyDecorator {
@@ -196,7 +196,7 @@ export class DecoratorGenerator {
      * @param context
      * @param decorator
      */
-    public generateParameterDecorator<Context extends GenericObject>(
+    public generateParameterDecorator<Context extends Dict>(
         context?: Partial<Context>,
         decorator?: Decorator<Context, ParameterDecorator>
     ): ParameterDecorator {
@@ -230,7 +230,7 @@ export class DecoratorGenerator {
         }
 
         const methodMap: Map<Name, Method> = new Map()
-        const methodArray: Method[] = Reflect.getOwnMetadata(METADATA_KEY_PARAMETER_ARRAY, constructor)
+        const methodArray: Method[] = Reflect.getOwnMetadata(METADATA_KEY_METHOD_ARRAY, constructor)
         for (const method of methodSet) {
             const methodReflector = defaultTo(
                 find(methodArray, (_method) => _method.getName() === method.name),

@@ -3,7 +3,7 @@ import { Zone } from './Zone'
 /**
  * Generic object.
  */
-export type GenericObject = {
+export type Dict = {
     [key: string | symbol | number]: any
 }
 
@@ -11,7 +11,7 @@ export type GenericObject = {
  * Decorative interface
  * @author James Chan
  */
-export interface Decorative<Context extends GenericObject> {
+export interface Decorative<Context extends Dict> {
     /**
      * Returns the decorative context.
      * @param zone a specified zone

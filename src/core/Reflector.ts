@@ -1,4 +1,4 @@
-import { Decorative, GenericObject } from './Decorative'
+import { Decorative, Dict } from './Decorative'
 import { Zone } from './Zone'
 import _, { isEmpty, isObject, isUndefined } from 'lodash'
 import { ClassContainer } from './ClassContainer'
@@ -17,7 +17,7 @@ export type Setter = (value: any) => void
  * Reflector.
  * <C> context
  */
-export abstract class Reflector<C extends GenericObject> implements Decorative<C> {
+export abstract class Reflector<C extends Dict> implements Decorative<C> {
     /**
      * Whether this reflector is decorated
      * @protected
@@ -88,17 +88,17 @@ export abstract class Reflector<C extends GenericObject> implements Decorative<C
      * @override
      */
     setContext<K extends keyof C>(zone: Zone, context: Partial<C> | K, value?: C[K]): void {
-        const curContext = this.contextMap?.get(zone)
+        const curContext = this.contextMap.get(zone)
         if (isObject(context)) {
             if (isUndefined(curContext)) {
-                this.contextMap?.set(zone, context)
+                this.contextMap.set(zone, Object.create(context))
             } else {
                 Object.assign(curContext, context)
             }
         } else if (!isUndefined(value)) {
             if (isUndefined(curContext)) {
                 const newContext = {} as Partial<C>
-                this.contextMap?.set(zone, newContext)
+                this.contextMap.set(zone, newContext)
                 newContext[context as K] = value
             } else {
                 curContext[context as K] = value
@@ -110,7 +110,7 @@ export abstract class Reflector<C extends GenericObject> implements Decorative<C
 /**
  * Class reflector.
  */
-export class Class<C extends GenericObject = GenericObject> extends Reflector<C> {
+export class Class<C extends Dict = Dict> extends Reflector<C> {
     private readonly _constructor: Constructor
 
     private readonly _methodMap: Map<Name, Method>
@@ -151,7 +151,7 @@ export class Class<C extends GenericObject = GenericObject> extends Reflector<C>
      * Returns the class reflector of the parent of this class.
      * <PC> parent class context
      */
-    public getParent<PCC extends GenericObject = GenericObject>(): Class<PCC> | null {
+    public getParent<PCC extends Dict = Dict>(): Class<PCC> | null {
         const constructorPrototype = Object.getPrototypeOf(this._constructor)
         console.log(constructorPrototype.name)
         if (isEmpty(constructorPrototype.name)) {
@@ -164,21 +164,21 @@ export class Class<C extends GenericObject = GenericObject> extends Reflector<C>
     /**
      * Returns method reflector map.
      */
-    public getMethodMap<MC extends GenericObject>(): Map<Name, Method<MC>> {
+    public getMethodMap<MC extends Dict>(): Map<Name, Method<MC>> {
         return this._methodMap as Map<Name, Method<MC>>
     }
 
     /**
      * Returns accessor reflector map.
      */
-    public getAccessorMap<AC extends GenericObject>(): Map<Name, Accessor<AC>> {
+    public getAccessorMap<AC extends Dict>(): Map<Name, Accessor<AC>> {
         return this._accessorMap as Map<Name, Accessor<AC>>
     }
 
     /**
      * Returns property reflector map.
      */
-    public getPropertyMap<PC extends GenericObject>(): Map<Name, Property<PC>> {
+    public getPropertyMap<PC extends Dict>(): Map<Name, Property<PC>> {
         return this._propertyMap as Map<Name, Property<PC>>
     }
 
@@ -186,7 +186,7 @@ export class Class<C extends GenericObject = GenericObject> extends Reflector<C>
      * Returns a method reflector by the specified name.
      * @param name
      */
-    public getMethod<MC extends GenericObject>(name: Name): Method<MC> {
+    public getMethod<MC extends Dict>(name: Name): Method<MC> {
         return this._methodMap.get(name) as Method<MC>
     }
 
@@ -194,7 +194,7 @@ export class Class<C extends GenericObject = GenericObject> extends Reflector<C>
      * Returns an accessor reflector by the specified name.
      * @param name
      */
-    public getAccessor<AC extends GenericObject>(name: Name): Accessor<AC> {
+    public getAccessor<AC extends Dict>(name: Name): Accessor<AC> {
         return this._accessorMap.get(name) as Accessor<AC>
     }
 
@@ -202,7 +202,7 @@ export class Class<C extends GenericObject = GenericObject> extends Reflector<C>
      * Returns a property reflector by the specified name.
      * @param name
      */
-    public getProperty<PC extends GenericObject>(name: Name): Property<PC> {
+    public getProperty<PC extends Dict>(name: Name): Property<PC> {
         return this._propertyMap.get(name) as Property<PC>
     }
 }
@@ -210,7 +210,7 @@ export class Class<C extends GenericObject = GenericObject> extends Reflector<C>
 /**
  * Method reflector.
  */
-export class Method<C extends GenericObject = GenericObject> extends Reflector<C> {
+export class Method<C extends Dict = Dict> extends Reflector<C> {
     /**
      * Function.
      * @private
@@ -252,7 +252,7 @@ export class Method<C extends GenericObject = GenericObject> extends Reflector<C
      * Returns parameter reflector array.
      * <PC> parameter context
      */
-    public getParameterArray<PC extends GenericObject = GenericObject>(): Parameter<PC>[] {
+    public getParameterArray<PC extends Dict = Dict>(): Parameter<PC>[] {
         return this._parameterArray as Parameter<PC>[]
     }
 
@@ -260,7 +260,7 @@ export class Method<C extends GenericObject = GenericObject> extends Reflector<C
      * Return a parameter reflector at a specified index.
      * @param index
      */
-    public getParameter<PC extends GenericObject = GenericObject>(index: number): Parameter<PC> {
+    public getParameter<PC extends Dict = Dict>(index: number): Parameter<PC> {
         return this._parameterArray[index] as Parameter<PC>
     }
 
@@ -268,7 +268,7 @@ export class Method<C extends GenericObject = GenericObject> extends Reflector<C
      * Returns a parameter by the specified name.
      * @param name
      */
-    public getParameterByName<PC extends GenericObject = GenericObject>(
+    public getParameterByName<PC extends Dict = Dict>(
         name: string
     ): Parameter<PC> | undefined {
         return _.find(
@@ -281,7 +281,7 @@ export class Method<C extends GenericObject = GenericObject> extends Reflector<C
 /**
  * Accessor reflector.
  */
-export class Accessor<C extends GenericObject = GenericObject> extends Reflector<C> {
+export class Accessor<C extends Dict = Dict> extends Reflector<C> {
     /**
      * Getter.
      * @private
@@ -330,7 +330,7 @@ export class Accessor<C extends GenericObject = GenericObject> extends Reflector
 /**
  * Property reflector.
  */
-export class Property<C extends GenericObject = GenericObject> extends Reflector<C> {
+export class Property<C extends Dict = Dict> extends Reflector<C> {
     public constructor(name: Name, isDecorated: boolean) {
         super(name, isDecorated)
     }
@@ -339,7 +339,7 @@ export class Property<C extends GenericObject = GenericObject> extends Reflector
 /**
  * Parameter reflector.
  */
-export class Parameter<C extends GenericObject = GenericObject> extends Reflector<C> {
+export class Parameter<C extends Dict = Dict> extends Reflector<C> {
     public constructor(name: Name, isDecorated: boolean) {
         super(name, isDecorated)
     }

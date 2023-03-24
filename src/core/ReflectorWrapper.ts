@@ -1,4 +1,4 @@
-import { GenericObject } from './Decorative'
+import { Dict } from './Decorative'
 import { Reflector } from './Reflector'
 import { Zone } from './Zone'
 
@@ -6,7 +6,7 @@ import { Zone } from './Zone'
  * Reflector Wrapper.
  * @author James Chan
  */
-export class ReflectorWrapper<Context extends GenericObject = GenericObject> {
+export class ReflectorWrapper<Context extends Dict = Dict> {
     /**
      * Reflector wrapped.
      * @private
@@ -51,5 +51,12 @@ export class ReflectorWrapper<Context extends GenericObject = GenericObject> {
      */
     public set<K extends keyof Context>(key: K, value: Context[K]): void {
         return this._reflector.setContext<K>(this._zone, key, value)
+    }
+
+    /**
+     * Returns context.
+     */
+    public getContext(): Context {
+        return this._reflector.getContext(this._zone) || ({} as Context)
     }
 }

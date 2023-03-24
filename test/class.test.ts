@@ -9,7 +9,7 @@ interface AnimalClassContext {
     movingSpeed: 'slow' | 'medium' | 'fast'
 }
 
-describe('Basics.', function () {
+describe('Basics class tests.', function () {
     const generator = new Reflect.DecoratorGenerator()
     const zone = Reflect.Zone.DEFAULT
 
@@ -27,7 +27,7 @@ describe('Basics.', function () {
     })
 })
 
-describe('Extensions.', function () {
+describe('Class extension tests.', function () {
     const generator = new Reflect.DecoratorGenerator()
     const zone = Reflect.Zone.DEFAULT
 
@@ -45,7 +45,7 @@ describe('Extensions.', function () {
     @MovingSpeed('medium')
     class Bunny extends Mammal {}
 
-    it('Context in parent class.', function () {
+    it('Accessing context from parent class.', function () {
         const bunnyClass = Reflect.ClassContainer.INSTANCE.get<AnimalClassContext>(Bunny)
         expect(bunnyClass).not.toBeNull()
         expect(bunnyClass?.getContext(zone, 'type')).toBeUndefined()
