@@ -46,7 +46,7 @@ describe('Class extension tests.', function () {
     class Bunny extends Mammal {}
 
     it('Accessing context from parent class.', function () {
-        const bunnyClass = Reflect.ClassContainer.INSTANCE.get<AnimalClassContext>(Bunny)
+        const bunnyClass = Reflect.getClass(Bunny)
         expect(bunnyClass).not.toBeNull()
         expect(bunnyClass?.getContext(zone, 'type')).toBeUndefined()
 

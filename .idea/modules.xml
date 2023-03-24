@@ -3,7 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/ts-reflect.iml" filepath="$PROJECT_DIR$/.idea/ts-reflect.iml" />
-      <module fileurl="file://$PROJECT_DIR$/../ts-reflect_old/.idea/ts-reflect_old.iml" filepath="$PROJECT_DIR$/../ts-reflect_old/.idea/ts-reflect_old.iml" />
     </modules>
   </component>
 </project>

@@ -9,7 +9,7 @@ At the very first beginning, we create two decorators, one of which is a class d
 ~~~typescript
 // create.ts
 
-import { DecoratorGenerator } from 'ts-reflect_old';
+import { DecoratorGenerator } from 'ts-reflect';
 
 // create a decorator generator
 const decoratorGenerator = new DecoratorGenerator();
@@ -40,11 +40,11 @@ We apply the decorators as follows. After a decorated class is loaded, its corre
 ~~~typescript
 // apply.ts
 
-import { myClassDecorator, myMethodDecorator } from './create';
-import { classContainer } from 'ts-reflect_old';
+import { MyClassDecorator, myMethodDecorator } from './create';
+import { classContainer } from 'ts-reflect';
 
 // apply decorators to your class
-@myClassDecorator()
+@MyClassDecorator()
 class MyClass {
   @myMethodDecorator('My label')
   public myMethod() {

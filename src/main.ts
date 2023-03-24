@@ -13,7 +13,7 @@ import { ClassContainer as ReflectClassContainer } from './core/ClassContainer'
 import { DecoratorGenerator as ReflectDecoratorGenerator } from './core/DecoratorGenerator'
 import { Zone as ReflectZone } from './core/Zone'
 import { contextOf as ReflectContextOf, DecoratedClass as ReflectDecoratedClass } from './common'
-import exp from 'constants'
+import { getClass as ReflectGetClass} from './common'
 
 export namespace Reflect {
     /**
@@ -50,4 +50,5 @@ export namespace Reflect {
      * Helper functions
      */
     export const contextOf = ReflectContextOf
+    export const getClass = ReflectGetClass
 }

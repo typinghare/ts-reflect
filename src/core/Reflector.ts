@@ -111,12 +111,28 @@ export abstract class Reflector<C extends Dict> implements Decorative<C> {
  * Class reflector.
  */
 export class Class<C extends Dict = Dict> extends Reflector<C> {
+    /**
+     * The constructor of this class.
+     * @private
+     */
     private readonly _constructor: Constructor
 
+    /**
+     * A map of methods in this class.
+     * @private
+     */
     private readonly _methodMap: Map<Name, Method>
 
+    /**
+     * A map of accessors in this class.
+     * @private
+     */
     private readonly _accessorMap: Map<Name, Accessor>
 
+    /**
+     * A map of properties in this class.
+     * @private
+     */
     private readonly _propertyMap: Map<Name, Property>
 
     /**
@@ -153,7 +169,6 @@ export class Class<C extends Dict = Dict> extends Reflector<C> {
      */
     public getParent<PCC extends Dict = Dict>(): Class<PCC> | null {
         const constructorPrototype = Object.getPrototypeOf(this._constructor)
-        console.log(constructorPrototype.name)
         if (isEmpty(constructorPrototype.name)) {
             return null
         }

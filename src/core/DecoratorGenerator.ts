@@ -20,7 +20,7 @@ import assert from 'assert'
 type BuiltinDecorator = ClassDecorator | PropertyDecorator | MethodDecorator | ParameterDecorator
 
 /**
- * A decorator.
+ * A counterfeit decorator.
  */
 export type Decorator<Context extends Dict, DecoratorType extends BuiltinDecorator> = (
     this: ReflectorWrapper<Context>,
