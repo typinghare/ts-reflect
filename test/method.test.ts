@@ -1,14 +1,12 @@
-import { Reflect } from '../src/main'
-import DecoratedClass = Reflect.DecoratedClass
-
+import { ClassContainer, DecoratedClass, DecoratorGenerator, Zone } from '../src/main'
 
 interface AnimalMethodContext {
     isMotion: boolean;
 }
 
 describe('Basic method tests.', function() {
-    const generator = new Reflect.DecoratorGenerator();
-    const zone = Reflect.Zone.DEFAULT;
+    const generator = new DecoratorGenerator();
+    const zone = Zone.DEFAULT;
 
     function Motion(): MethodDecorator {
         return generator.generateMethodDecorator<AnimalMethodContext>({ isMotion: true });
@@ -23,7 +21,7 @@ describe('Basic method tests.', function() {
     }
 
     it('Test accessing context from method reflector.', function() {
-        const bunnyClass = Reflect.ClassContainer.INSTANCE.get(Bunny);
+        const bunnyClass = ClassContainer.INSTANCE.get(Bunny);
         const runMethod = bunnyClass?.getMethod<AnimalMethodContext>('run');
         expect(runMethod?.getFunction()).toBe(new Bunny().run);
         expect(runMethod?.getContext(zone, 'isMotion')).toBe(true);

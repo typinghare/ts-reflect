@@ -1,13 +1,12 @@
-import { Reflect } from '../src/main'
-import DecoratedClass = Reflect.DecoratedClass
+import { ClassContainer, DecoratedClass, DecoratorGenerator, Zone } from '../src/main'
 
 interface AnimalPropertyContext {
     pattern: string
 }
 
 describe('Basic property tests.', function () {
-    const generator = new Reflect.DecoratorGenerator()
-    const zone = Reflect.Zone.DEFAULT
+    const generator = new DecoratorGenerator()
+    const zone = Zone.DEFAULT
 
     function Caption(pattern: string): PropertyDecorator {
         return generator.generatePropertyDecorator<AnimalPropertyContext>({ pattern })
@@ -26,7 +25,7 @@ describe('Basic property tests.', function () {
     function getMovingSpeed(bunny: Bunny) {
         const movingSpeed = bunny.movingSpeed
 
-        const bunnyClass = Reflect.ClassContainer.INSTANCE.get(Bunny)
+        const bunnyClass = ClassContainer.INSTANCE.get(Bunny)
         const pattern = bunnyClass?.getProperty<AnimalPropertyContext>('movingSpeed')?.getContext(zone, 'pattern')
 
         // pattern match

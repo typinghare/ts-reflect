@@ -1,11 +1,11 @@
 {
   "name": "@typinghare/ts-reflect",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "A useful library for making your own typescript decorators.",
   "main": "dist/main.js",
   "types": "dist/main.d.ts",
   "scripts": {
-    "build": "tsc",
+    "build": "rm -rf dist && tsc",
     "test": "jest --coverage"
   },
   "keywords": [

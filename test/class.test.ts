@@ -1,4 +1,4 @@
-import { Reflect } from '../src/main'
+import { ClassContainer, DecoratorGenerator, getClass, Zone } from '../src/main'
 
 interface MyClassContext {
     scope: 'singleton' | 'prototype' | 'request'
@@ -10,8 +10,8 @@ interface AnimalClassContext {
 }
 
 describe('Basics class tests.', function () {
-    const generator = new Reflect.DecoratorGenerator()
-    const zone = Reflect.Zone.DEFAULT
+    const zone = Zone.DEFAULT
+    const generator = new DecoratorGenerator(zone)
 
     function Scope(scope: MyClassContext['scope']): ClassDecorator {
         return generator.generateClassDecorator({ scope })
@@ -21,15 +21,15 @@ describe('Basics class tests.', function () {
     class Bunny {}
 
     it('Basic context access.', function () {
-        const bunnyReflector = Reflect.ClassContainer.INSTANCE.get<MyClassContext>(Bunny)
+        const bunnyReflector = ClassContainer.INSTANCE.get<MyClassContext>(Bunny)
         expect(bunnyReflector).toBeDefined()
         expect(bunnyReflector?.getContext(zone, 'scope')).toBe('singleton')
     })
 })
 
 describe('Class extension tests.', function () {
-    const generator = new Reflect.DecoratorGenerator()
-    const zone = Reflect.Zone.DEFAULT
+    const generator = new DecoratorGenerator()
+    const zone = Zone.DEFAULT
 
     function IsMammal(): ClassDecorator {
         return generator.generateClassDecorator<AnimalClassContext>({ type: 'mammal' })
@@ -46,13 +46,13 @@ describe('Class extension tests.', function () {
     class Bunny extends Mammal {}
 
     it('Accessing context from parent class.', function () {
-        const bunnyClass = Reflect.getClass(Bunny)
+        const bunnyClass = getClass(Bunny)
         expect(bunnyClass).not.toBeNull()
         expect(bunnyClass?.getContext(zone, 'type')).toBeUndefined()
 
         const mammalReflector = bunnyClass?.getParent()
         expect(mammalReflector).not.toBeNull()
-        expect(mammalReflector).toBe(Reflect.ClassContainer.INSTANCE.get<AnimalClassContext>(Mammal))
+        expect(mammalReflector).toBe(ClassContainer.INSTANCE.get<AnimalClassContext>(Mammal))
         expect(mammalReflector?.getConstructor()).toBe(Mammal)
     })
 })

@@ -1,6 +1,4 @@
-import { Reflect } from '../src/main'
-import { Class } from '../src/core/Reflector'
-import DecoratedClass = Reflect.DecoratedClass
+import { Class, ClassContainer, contextOf, DecoratedClass, DecoratorGenerator, Zone } from '../src/main'
 
 interface CityContext {
     name: string
@@ -9,8 +7,8 @@ interface CityContext {
 }
 
 describe('Reflector wrapper tests.', function () {
-    const zone = new Reflect.Zone('zone')
-    const generator = new Reflect.DecoratorGenerator(zone)
+    const zone = new Zone('zone')
+    const generator = new DecoratorGenerator(zone)
 
     function CityInfo(population: number): MethodDecorator {
         return generator.generateMethodDecorator<CityContext>(
@@ -30,10 +28,10 @@ describe('Reflector wrapper tests.', function () {
     }
 
     it('Reflector wrapper get.', function () {
-        const classDecorator = Reflect.ClassContainer.INSTANCE.get(State) as Class
+        const classDecorator = ClassContainer.INSTANCE.get(State) as Class
 
         for (const cityMethod of classDecorator.getMethodMap<CityContext>().values()) {
-            const context = Reflect.contextOf(cityMethod, zone)
+            const context = contextOf(cityMethod, zone)
             expect(context.get('name')).toEqual('Quincy')
             expect(context.get('population')).toEqual(94398)
             expect(context.get('area')).toBeUndefined()

@@ -1,54 +1,31 @@
 import 'reflect-metadata'
 
-import {
-    Accessor as ReflectAccessor,
-    Class as ReflectClass,
-    Method as ReflectMethod,
-    Parameter as ReflectParameter,
-    Property as ReflectProperty,
-    Reflector as ReflectReflector,
-} from './core/Reflector'
+/**
+ * class container
+ */
+export { ClassContainer } from './core/ClassContainer'
 
-import { ClassContainer as ReflectClassContainer } from './core/ClassContainer'
-import { DecoratorGenerator as ReflectDecoratorGenerator } from './core/DecoratorGenerator'
-import { Zone as ReflectZone } from './core/Zone'
-import { contextOf as ReflectContextOf, DecoratedClass as ReflectDecoratedClass } from './common'
-import { getClass as ReflectGetClass} from './common'
+/**
+ * Decorator generator
+ */
+export { DecoratorGenerator } from './core/DecoratorGenerator'
 
-export namespace Reflect {
-    /**
-     * Reflectors
-     */
-    export const Reflector = ReflectReflector
-    export const Class = ReflectClass
-    export const Method = ReflectMethod
-    export const Accessor = ReflectAccessor
-    export const Property = ReflectProperty
-    export const Parameter = ReflectParameter
+/**
+ * Reflectors.
+ */
+export * from './core/Reflector'
 
-    /**
-     * class container
-     */
-    export const ClassContainer = ReflectClassContainer
+/**
+ * Zone
+ */
+export { Zone } from './core/Zone'
 
-    /**
-     * Decorator generator
-     */
-    export const DecoratorGenerator = ReflectDecoratorGenerator
+/**
+ * Common decorators
+ */
+export { DecoratedClass } from './common'
 
-    /**
-     * Zone
-     */
-    export const Zone = ReflectZone
-
-    /**
-     * Common decorators
-     */
-    export const DecoratedClass = ReflectDecoratedClass
-
-    /**
-     * Helper functions
-     */
-    export const contextOf = ReflectContextOf
-    export const getClass = ReflectGetClass
-}
+/**
+ * Helper functions
+ */
+export { contextOf, getClass } from './common'
