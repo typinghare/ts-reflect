@@ -1,7 +1,7 @@
 import { Zone } from './Zone'
 
 /**
- * Generic object.
+ * Dictionary-like.
  */
 export type Dict = {
     [key: string | symbol | number]: any

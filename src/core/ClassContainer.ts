@@ -1,5 +1,8 @@
-import { Class, Constructor } from './Reflector'
+import { Class } from './Reflector'
 import { Dict } from './Decorative'
+import { Constructor } from '../type'
+import { Integrator } from './Integrator'
+import { defaultTo } from 'lodash'
 
 /**
  * Class container.
@@ -33,7 +36,7 @@ export class ClassContainer {
 
     /**
      * Registers a class.
-     * @param _class
+     * @param _class class to register.
      */
     public register(_class: Class) {
         this._classMap.set(_class.getConstructor(), _class)
@@ -43,9 +46,10 @@ export class ClassContainer {
      * Returns a class reflector corresponding to the given constructor.
      * @param constructor
      */
-    public get<CC extends Dict = Dict>(
-        constructor: Constructor
-    ): Class<CC> | undefined {
-        return this._classMap.get(constructor) as Class<CC>
+    public get<ClassContext extends Dict = Dict>(constructor: Constructor): Class<ClassContext> | undefined {
+        return defaultTo(
+            this._classMap.get(constructor) as Class<ClassContext>,
+            Integrator.INSTANCE.integrate(constructor) as Class<ClassContext>
+        )
     }
 }

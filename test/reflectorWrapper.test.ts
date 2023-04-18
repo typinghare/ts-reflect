@@ -1,4 +1,4 @@
-import { Class, ClassContainer, contextOf, DecoratedClass, DecoratorGenerator, Zone } from '../src/main'
+import { Class, ClassContainer, contextOf, DecoratorGenerator, Zone } from '../src/main'
 
 interface CityContext {
     name: string
@@ -19,7 +19,6 @@ describe('Reflector wrapper tests.', function () {
         )
     }
 
-    @DecoratedClass()
     class State {
         @CityInfo(94398)
         public Quincy(): string {

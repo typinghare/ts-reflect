@@ -1,6 +1,7 @@
 import { Dict } from './Decorative'
 import { Reflector } from './Reflector'
 import { Zone } from './Zone'
+import { isUndefined } from 'lodash'
 
 /**
  * Reflector Wrapper.
@@ -58,5 +59,25 @@ export class ReflectorWrapper<Context extends Dict = Dict> {
      */
     public getContext(): Context {
         return this._reflector.getContext(this._zone) || ({} as Context)
+    }
+
+    /**
+     * Returns the value of a specified key; default value if not exist.
+     * @param key
+     * @param defaultValue
+     */
+    public getOrDefault<K extends keyof Context>(key: K, defaultValue: Context[K]): Context[K] {
+        return this.get(key) || defaultValue
+    }
+
+    /**
+     * Sets a value of the specified key if the present value is undefined.
+     * @param key
+     * @param value
+     */
+    public setIfUndefined<K extends keyof Context>(key: K, value: Context[K]): void {
+        if (isUndefined(this.get(key))) {
+            this.set(key, value)
+        }
     }
 }

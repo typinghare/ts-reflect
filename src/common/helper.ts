@@ -1,17 +1,9 @@
-import { DecoratorGenerator } from './core/DecoratorGenerator'
-import { Dict } from './core/Decorative'
-import { Class, Constructor, Reflector } from './core/Reflector'
-import { Zone } from './core/Zone'
-import { ReflectorWrapper } from './core/ReflectorWrapper'
-import { ClassContainer } from './core/ClassContainer'
-
-/**
- * A general class decorator.
- * @constructor
- */
-export function DecoratedClass(): ClassDecorator {
-    return new DecoratorGenerator().generateClassDecorator()
-}
+import { ReflectorWrapper } from '../core/ReflectorWrapper'
+import { Class, Reflector } from '../core/Reflector'
+import { Zone } from '../core/Zone'
+import { Constructor } from '../type'
+import { Dict } from '../core/Decorative'
+import { ClassContainer } from '../main'
 
 /**
  * Returns a reflector wrapper.

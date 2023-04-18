@@ -23,9 +23,14 @@ export { Zone } from './core/Zone'
 /**
  * Common decorators
  */
-export { DecoratedClass } from './common'
+export * from './common/decorator'
 
 /**
  * Helper functions
  */
-export { contextOf, getClass } from './common'
+export * from './common/helper'
+
+/**
+ * Types
+ */
+export * from './type'
