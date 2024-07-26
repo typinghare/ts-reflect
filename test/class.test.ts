@@ -1,4 +1,4 @@
-import { ClassContainer, DecoratorGenerator, getClass, Zone } from '../src/main'
+import { ClassContainer, DecoratorGenerator, getClass, Zone } from '../src-old/main'
 
 interface MyClassContext {
     scope: 'singleton' | 'prototype' | 'request'

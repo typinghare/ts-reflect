@@ -1,6 +1,6 @@
 // create.ts
 
-import { DecoratorGenerator, getClass, Zone } from '../src/main'
+import { DecoratorGenerator, getClass, Zone } from '../src-old/main'
 
 // create a zone and a decorator generator
 export const myZone = new Zone()

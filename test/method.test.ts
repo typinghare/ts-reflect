@@ -1,4 +1,4 @@
-import { ClassContainer, DecoratedClass, DecoratorGenerator, Zone } from '../src/main'
+import { ClassContainer, DecoratedClass, DecoratorGenerator, Zone } from '../src-old/main'
 
 interface AnimalMethodContext {
     isMotion: boolean;

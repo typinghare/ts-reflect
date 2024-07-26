@@ -1,4 +1,4 @@
-import { Class, ClassContainer, contextOf, DecoratorGenerator, Zone } from '../src/main'
+import { Class, ClassContainer, contextOf, DecoratorGenerator, Zone } from '../src-old/main'
 
 interface CityContext {
     name: string

@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "ESNext",
     "module": "NodeNext",
-    "outDir": "src/node_dist",
+    "outDir": "src-old/node_dist",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
@@ -11,6 +11,6 @@
     "moduleResolution": "NodeNext"
   },
   "include": [
-    "src/node/**/*.ts"
+    "src-old/node/**/*.ts"
   ]
 }

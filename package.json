@@ -1,6 +1,6 @@
 {
   "name": "@typinghare/ts-reflect",
-  "version": "0.2.3",
+  "version": "0.3.0",
   "description": "A useful library for making your own typescript decorators.",
   "main": "dist/main.js",
   "types": "dist/main.d.ts",
@@ -13,7 +13,10 @@
     "reflect",
     "decorator"
   ],
-  "author": "James Chan",
+  "author": {
+    "name": "James Chan",
+    "email": "jameschan312.cn@gmail.com"
+  },
   "license": "MIT",
   "dependencies": {
     "@captemulation/get-parameter-names": "^1.4.2",

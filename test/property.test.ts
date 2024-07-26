@@ -1,4 +1,4 @@
-import { ClassContainer, DecoratedClass, DecoratorGenerator, getClass, Zone } from '../src/main'
+import { ClassContainer, DecoratedClass, DecoratorGenerator, getClass, Zone } from '../src-old/main'
 
 interface AnimalPropertyContext {
     pattern: string

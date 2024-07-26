@@ -1,4 +1,4 @@
-import { ClassContainer, DecoratorGenerator, Zone, Constructor } from '../src/main'
+import { ClassContainer, DecoratorGenerator, Zone, Constructor } from '../src-old/main'
 import Dict = NodeJS.Dict
 
 interface ClassContext {
