@@ -17,13 +17,16 @@
   "license": "MIT",
   "dependencies": {
     "@captemulation/get-parameter-names": "^1.4.2",
-    "@types/lodash": "^4.14.191",
-    "@types/node": "^18.15.6",
-    "lodash": "^4.17.21",
-    "reflect-metadata": "^0.1.13"
+    "reflect-metadata": "^0.2.2"
   },
   "devDependencies": {
+    "@babel/core": "^7.24.8",
+    "@babel/preset-env": "^7.24.8",
+    "@babel/preset-typescript": "^7.24.7",
     "@types/jest": "^29.5.0",
+    "@types/lodash": "^4.14.191",
+    "@types/node": "^20.14.12",
+    "babel-jest": "^29.7.0",
     "ts-jest": "^29.0.5"
   }
 }
